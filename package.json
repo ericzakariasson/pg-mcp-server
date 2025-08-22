@@ -1,0 +1,38 @@
+{
+  "name": "postgres-mcp-server",
+  "version": "0.2.0",
+  "description": "A Model Context Protocol server for PostgreSQL databases",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "bun run index.ts --transport=http",
+    "dev": "DEBUG=true bun run index.ts --transport=http",
+    "inspector:stdio": "npx @modelcontextprotocol/inspector bun run index.ts --transport=stdio",
+    "inspector:http": "npx @modelcontextprotocol/inspector bun run index.ts --transport=http",
+    "db:start": "docker-compose up -d",
+    "db:stop": "docker-compose down",
+    "db:reset": "docker-compose down -v && docker-compose up -d",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "bun test",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\""
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0",
+    "prettier": "^3.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.3",
+    "postgres": "^3.4.7",
+    "zod": "^3.23.8"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}
