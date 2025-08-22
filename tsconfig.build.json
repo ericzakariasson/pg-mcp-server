@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "lib",
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "sourceMap": true,
+    "module": "ESNext",
+    "target": "ES2020",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false
+  },
+  "include": ["index.ts", "src/**/*.ts"],
+  "exclude": ["dist", "lib", "node_modules", "tests", "**/*.test.ts"]
+}
+
+

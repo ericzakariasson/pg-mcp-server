@@ -1,4 +1,4 @@
-# PostgreSQL MCP Server
+# Postgres MCP Server
 
 A Model Context Protocol server for PostgreSQL databases. Enables LLMs to query and analyze PostgreSQL databases through a controlled interface.
 
@@ -10,8 +10,8 @@ Add to your MCP client settings:
 {
   "mcpServers": {
     "postgres": {
-      "command": "bun",
-      "args": ["run", "/path/to/postgres-mcp-server/index.ts", "--transport", "stdio"],
+      "command": "npx",
+      "args": ["--yes", "pg-mcp-server", "--transport", "stdio"],
       "env": {
         "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/postgres"
       }
@@ -37,11 +37,11 @@ Add to your MCP client settings:
 Start commands:
 
 ```bash
-# stdio transport (default)
-bun run index.ts --transport=stdio
+# stdio transport (default, via installed CLI)
+pg-mcp-server --transport=stdio
 
 # http transport
-bun run index.ts --transport=http
+pg-mcp-server --transport=http
 ```
 
 ### Tools
@@ -83,8 +83,8 @@ Sample tables included: `users`, `products`, `orders`, `order_items`
 
 ```bash
 # Clone and install
-git clone https://github.com/ericzakariasson/postgres-mcp-server.git
-cd postgres-mcp-server
+git clone https://github.com/ericzakariasson/pg-mcp-server.git
+cd pg-mcp-server
 bun install
 
 # Run (stdio transport)
@@ -97,20 +97,25 @@ DEBUG=true bun run index.ts -- --transport=http
 bun test                      # Run tests
 ```
 
-### Building Standalone Binary
+Use local build in MCP client settings:
 
 ```bash
-# Build for current platform
-bun build:current
-
-# Run the binary directly
-./dist/postgres-mcp-server --transport=stdio
-
-# Build for all platforms (for publishing)
-bun build:bin
+bun run build:js
 ```
 
-The standalone binary includes the Bun runtime and all dependencies - no Node.js or Bun required on target machines.
+```json
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "node",
+      "args": ["/absolute/path/to/pg-mcp-server/lib/index.js", "--transport", "stdio"],
+      "env": {
+        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/postgres"
+      }
+    }
+  }
+}
+```
 
 ## License
 

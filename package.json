@@ -1,16 +1,16 @@
 {
-  "name": "postgres-mcp-server",
+  "name": "pg-mcp-server",
   "version": "0.1.0",
   "description": "A Model Context Protocol server for PostgreSQL databases",
   "module": "index.ts",
   "type": "module",
   "private": false,
   "bin": {
-    "postgres-mcp-server": "bin/launch.cjs"
+    "pg-mcp-server": "lib/index.js"
   },
   "files": [
     "bin/",
-    "dist/",
+    "lib/",
     "index.ts",
     "src/",
     "README.md",
@@ -25,9 +25,8 @@
     "dev": "DEBUG=true bun run index.ts --transport=http",
     "inspector:stdio": "npx @modelcontextprotocol/inspector bun run index.ts --transport=stdio",
     "inspector:http": "npx @modelcontextprotocol/inspector bun run index.ts --transport=http",
-    "build:current": "bun run scripts/build-current.ts",
-    "build:bin": "mkdir -p dist && bun build --compile --minify index.ts --outfile dist/postgres-mcp-server-darwin-arm64 && bun build --compile --minify --target=bun-darwin-x64 index.ts --outfile dist/postgres-mcp-server-darwin-x64 && bun build --compile --minify --target=bun-linux-x64 index.ts --outfile dist/postgres-mcp-server-linux-x64 && bun build --compile --minify --target=bun-linux-arm64 index.ts --outfile dist/postgres-mcp-server-linux-arm64 && bun build --compile --minify --target=bun-windows-x64 index.ts --outfile dist/postgres-mcp-server-windows-x64.exe",
-    "prepublishOnly": "rm -rf dist && bun run build:bin",
+    "build:js": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build:js",
     "db:start": "docker-compose up -d",
     "db:stop": "docker-compose down",
     "db:reset": "docker-compose down -v && docker-compose up -d",

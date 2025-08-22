@@ -59,3 +59,4 @@ temp/
 
 # Ignore compiled binaries
 /dist/
+/lib/

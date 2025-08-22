@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * PostgreSQL MCP Server
@@ -20,7 +20,7 @@ import { parseArgs } from "util";
 import { z } from "zod";
 
 const { values } = parseArgs({
-  args: Bun.argv,
+  args: process.argv.slice(2),
   options: {
     transport: { type: "string" },
   },

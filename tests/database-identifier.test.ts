@@ -16,13 +16,13 @@ const cfg: ServerConfig = {
 describe("DatabaseConnection.quoteIdentifier", () => {
   test("escapes double quotes in identifier", () => {
     const db = new DatabaseConnection(cfg, new ConsoleLogger(false));
-    // @ts-expect-error private access for test
+    // @ts-ignore private access for test
     expect(db["quoteIdentifier"]('my"table')).toBe('"my""table"');
   });
 
   test("throws on null byte in identifier", () => {
     const db = new DatabaseConnection(cfg, new ConsoleLogger(false));
-    // @ts-expect-error private access for test
+    // @ts-ignore private access for test
     expect(() => db["quoteIdentifier"]("bad\0name")).toThrow("Identifier cannot contain null bytes");
   });
 });
