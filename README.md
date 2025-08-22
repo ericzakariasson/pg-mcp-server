@@ -117,6 +117,22 @@ bun run build:js
 }
 ```
 
+## Releases
+
+This repo auto-creates a GitHub Release when you push a tag that matches the version in `package.json`:
+
+1. Update `CHANGELOG.md` and bump the version in `package.json`.
+2. Commit the changes on `main` (or your release branch).
+3. Create and push a matching tag: 
+
+```bash
+VERSION=$(jq -r .version package.json)
+git tag v"$VERSION"
+git push origin v"$VERSION"
+```
+
+The GitHub Actions workflow will validate that the tag (e.g. `v0.1.0`) matches `package.json`, then use `gh` to create a release with generated notes, and publish to npm.
+
 ## License
 
 MIT - see [LICENSE](LICENSE)
