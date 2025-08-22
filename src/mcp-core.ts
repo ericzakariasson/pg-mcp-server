@@ -21,11 +21,17 @@ export interface PostgresMcp {
  * Create and configure the MCP server with all Postgres tools/resources.
  * Shared by both stdio and HTTP entrypoints.
  */
-export function createPostgresMcpServer(): PostgresMcp {
+export type TransportKind = "stdio" | "http";
+
+export function createPostgresMcpServer(transportKind: TransportKind = "stdio"): PostgresMcp {
   const config = loadConfig();
   validateConfig(config);
 
-  const logger = new ConsoleLogger(config.debug);
+  const logger = new ConsoleLogger(
+    config.debug,
+    // For stdio transport, suppress non-error logs to avoid corrupting the stream
+    transportKind === "stdio" ? 0 /* LogLevel.ERROR */ : undefined,
+  );
   const db = new DatabaseConnection(config, logger);
   const queryValidator = new QueryValidator(config.allowWriteOps, logger);
 

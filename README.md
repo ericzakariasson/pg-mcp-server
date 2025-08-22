@@ -97,6 +97,21 @@ DEBUG=true bun run index.ts -- --transport=http
 bun test                      # Run tests
 ```
 
+### Building Standalone Binary
+
+```bash
+# Build for current platform
+bun build:current
+
+# Run the binary directly
+./dist/postgres-mcp-server --transport=stdio
+
+# Build for all platforms (for publishing)
+bun build:bin
+```
+
+The standalone binary includes the Bun runtime and all dependencies - no Node.js or Bun required on target machines.
+
 ## License
 
 MIT - see [LICENSE](LICENSE)

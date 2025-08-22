@@ -18,8 +18,8 @@ export interface Logger {
 export class ConsoleLogger implements Logger {
   private level: LogLevel;
 
-  constructor(debug: boolean = false) {
-    this.level = debug ? LogLevel.DEBUG : LogLevel.INFO;
+  constructor(debug: boolean = false, levelOverride?: LogLevel) {
+    this.level = levelOverride ?? (debug ? LogLevel.DEBUG : LogLevel.INFO);
   }
 
   private log(
@@ -40,9 +40,10 @@ export class ConsoleLogger implements Logger {
         ...(context as any),
       });
     } else if (context) {
-      console.log(`${prefix} ${message}`, context);
+      // IMPORTANT: All logs go to stderr to avoid corrupting stdio JSON-RPC
+      console.error(`${prefix} ${message}`, context);
     } else {
-      console.log(`${prefix} ${message}`);
+      console.error(`${prefix} ${message}`);
     }
   }
 

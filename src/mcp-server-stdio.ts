@@ -3,7 +3,7 @@ import { ConfigurationError } from "./types.js";
 import { createPostgresMcpServer } from "./mcp-core.js";
 
 export async function startMcpServerStdio(): Promise<void> {
-  const { server, ctx } = createPostgresMcpServer();
+  const { server, ctx } = createPostgresMcpServer("stdio");
 
   try {
     await ctx.db.testConnection();
@@ -35,13 +35,6 @@ export async function startMcpServerStdio(): Promise<void> {
     }
     throw error;
   }
-}
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  startMcpServerStdio().catch((error) => {
-    console.error("Fatal error:", error);
-    process.exit(1);
-  });
 }
 
 

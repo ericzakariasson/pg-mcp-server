@@ -53,3 +53,9 @@ temp/
 # Debug files
 *.trace
 *.prof
+
+# Ignore Bun build temp files
+.*.bun-build
+
+# Ignore compiled binaries
+/dist/
