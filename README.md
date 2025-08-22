@@ -4,6 +4,8 @@ A Model Context Protocol server for PostgreSQL databases. Enables LLMs to query 
 
 ## Installation
 
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=postgres&config=eyJjb21tYW5kIjoibnB4IC0teWVzIHBnLW1jcC1zZXJ2ZXIgLS10cmFuc3BvcnQgc3RkaW8iLCJlbnYiOnsiREFUQUJBU0VfVVJMIjoicG9zdGdyZXNxbDovL3Bvc3RncmVzOnBvc3RncmVzQGxvY2FsaG9zdDo1NDMyL3Bvc3RncmVzIn19)
+
 Add to your MCP client settings:
 
 ```json
