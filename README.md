@@ -27,6 +27,7 @@ Add to your MCP client settings:
 - `DATABASE_URL` - PostgreSQL connection string (required)
 - `DANGEROUSLY_ALLOW_WRITE_OPS` - Enable writes (default: `false`)
 - `DEBUG` - Enable debug logging (default: `false`)
+- `PG_SSL_ROOT_CERT` - Optional path to a TLS CA bundle (e.g., AWS RDS global bundle)
 
 ## Usage
 

@@ -41,6 +41,7 @@ const EnvSchema = z.object({
   PG_STATEMENT_TIMEOUT: intFromEnv(30000, 0),
   PG_PREPARE_STATEMENTS: booleanFromEnv(true),
   DEBUG: booleanFromEnv(false),
+  PG_SSL_ROOT_CERT: z.string().optional(),
 });
 
 // Zod schema for the final config
@@ -52,6 +53,7 @@ const ConfigSchema = z.object({
   statementTimeout: z.number().min(0),
   prepareStatements: z.boolean(),
   debug: z.boolean(),
+  sslRootCertPath: z.string().optional(),
 });
 
 /**
@@ -71,6 +73,7 @@ export function loadConfig(): ServerConfig {
       statementTimeout: env.PG_STATEMENT_TIMEOUT,
       prepareStatements: env.PG_PREPARE_STATEMENTS,
       debug: env.DEBUG,
+      sslRootCertPath: env.PG_SSL_ROOT_CERT,
     };
 
     // Validate the final config

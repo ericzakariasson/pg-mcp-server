@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import fs from "node:fs";
 import type { Sql } from "postgres";
 import type {
   ServerConfig,
@@ -24,22 +25,39 @@ export class DatabaseConnection {
    * Create postgres connection with configuration
    */
   private createConnection(): Sql {
-    const connectionOptions = {
+    const connectionOptions: postgres.Options<Record<string, postgres.PostgresType>> = {
       max: this.config.maxConnections,
       idle_timeout: 20,
       connect_timeout: this.config.connectionTimeout,
       prepare: this.config.prepareStatements,
       onnotice: this.config.debug
-        ? (notice: any) => this.logger.debug("PostgreSQL Notice", { notice })
+        ? (notice) => this.logger.debug("PostgreSQL Notice", { notice })
         : undefined,
       transform: {
         undefined: null, // Transform undefined to null
       },
     };
 
+    // Enable TLS with custom CA if provided
+    if (this.config.sslRootCertPath) {
+      try {
+        const ca = fs.readFileSync(this.config.sslRootCertPath).toString();
+        connectionOptions.ssl = {
+          ca,
+          rejectUnauthorized: true,
+        };
+      } catch (error) {
+        this.logger.error("Failed to read SSL root certificate", error);
+        throw new PostgresError(
+          `Failed to read SSL root certificate at ${this.config.sslRootCertPath}`,
+        );
+      }
+    }
+
     this.logger.info("Creating PostgreSQL connection", {
       maxConnections: connectionOptions.max,
       prepareStatements: connectionOptions.prepare,
+      tlsEnabled: Boolean(connectionOptions.ssl),
     });
 
     return postgres(this.config.databaseUrl, connectionOptions);

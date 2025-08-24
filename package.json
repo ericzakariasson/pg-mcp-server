@@ -21,8 +21,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "bun run index.ts --transport=http",
-    "dev": "DEBUG=true bun run index.ts --transport=http",
+    "dev": "tsc -w -p tsconfig.build.json",
     "inspector:stdio": "npx @modelcontextprotocol/inspector bun run index.ts --transport=stdio",
     "inspector:http": "npx @modelcontextprotocol/inspector bun run index.ts --transport=http",
     "build:js": "tsc -p tsconfig.build.json",

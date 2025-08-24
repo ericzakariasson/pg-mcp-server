@@ -55,6 +55,7 @@ export interface ServerConfig {
   statementTimeout: number;
   prepareStatements: boolean;
   debug: boolean;
+  sslRootCertPath?: string;
 }
 
 // Error types
