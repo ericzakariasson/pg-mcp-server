@@ -2,12 +2,7 @@
 
 A Model Context Protocol server for PostgreSQL databases. Enables LLMs to query and analyze PostgreSQL databases through a controlled interface.
 
-
-
-<video width="100%" controls>
-  <source src="assets/demo.mp4" type="video/mp4">
-  Your browser does not support the video tag. <a href="assets/demo.mp4">Download the video</a>
-</video>
+https://github.com/user-attachments/assets/6571c20c-91c9-4a6e-8332-13b587b79fbf
 
 ## Installation
 
