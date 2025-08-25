@@ -2,6 +2,13 @@
 
 A Model Context Protocol server for PostgreSQL databases. Enables LLMs to query and analyze PostgreSQL databases through a controlled interface.
 
+
+
+<video width="100%" controls>
+  <source src="assets/demo.mp4" type="video/mp4">
+  Your browser does not support the video tag. <a href="assets/demo.mp4">Download the video</a>
+</video>
+
 ## Installation
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=postgres&config=eyJjb21tYW5kIjoibnB4IC0teWVzIHBnLW1jcC1zZXJ2ZXIgLS10cmFuc3BvcnQgc3RkaW8iLCJlbnYiOnsiREFUQUJBU0VfVVJMIjoicG9zdGdyZXNxbDovL3Bvc3RncmVzOnBvc3RncmVzQGxvY2FsaG9zdDo1NDMyL3Bvc3RncmVzIn19)
