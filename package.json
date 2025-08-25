@@ -26,8 +26,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsc -w -p tsconfig.build.json",
-    "inspector:stdio": "npx @modelcontextprotocol/inspector bun run index.ts --transport=stdio",
-    "inspector:http": "npx @modelcontextprotocol/inspector bun run index.ts --transport=http",
+    "inspector:stdio": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres npx @modelcontextprotocol/inspector bun run index.ts --transport=stdio",
+    "inspector:http": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres npx @modelcontextprotocol/inspector bun run index.ts --transport=http",
     "build:js": "tsc -p tsconfig.build.json",
     "prepublishOnly": "bun run typecheck && bun test && bun run build:js",
     "db:start": "docker-compose up -d",

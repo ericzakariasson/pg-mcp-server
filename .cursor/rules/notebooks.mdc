@@ -1,0 +1,6 @@
+---
+globs: *.ipynb
+alwaysApply: false
+---
+
+Use MCP server to discover schema and get sample data. All analysis, data aggregations and queries should be done in the notebooks so they can be shared across my team
