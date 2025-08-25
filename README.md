@@ -67,6 +67,10 @@ Here's an example prompt to test if your MCP server is working:
 Show me the first 5 users from the database
 ```
 
+## Data Analysis & Notebooks
+
+For data analysis and exploration, I've added a Cursor rule for using the MCP server together with notebooks in [`.cursor/rules/notebooks.mdc`](.cursor/rules/notebooks.mdc):
+
 ## Quick Start with Docker
 
 ```bash
