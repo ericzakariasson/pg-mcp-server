@@ -113,7 +113,20 @@ export function createPostgresMcpServer(transportKind: TransportKind = "stdio"):
   // Register table detail resource
   server.registerResource(
     "table",
-    new ResourceTemplate("postgres://table/{schema}/{table}", { list: undefined }),
+    new ResourceTemplate("postgres://table/{schema}/{table}", {
+      // Expose each table as a discoverable MCP resource
+      async list() {
+        const tables = await db.getTables();
+        return {
+          resources: tables.map((t) => ({
+            uri: `postgres://table/${encodeURIComponent(t.table_schema)}/${encodeURIComponent(t.table_name)}`,
+            name: `${t.table_schema}.${t.table_name}`,
+            description: `Schema and sample rows for ${t.table_schema}.${t.table_name}`,
+            mimeType: "application/json",
+          })),
+        };
+      },
+    }),
     {
       title: "PostgreSQL Table Details",
       description: "Get schema information and sample rows for a specific table",
