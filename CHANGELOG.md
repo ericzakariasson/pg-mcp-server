@@ -1,13 +1,28 @@
 # Changelog
 
-## [0.2.0] - 2025-01-14
+## [0.3.0] - 2025-11-03
 
 ### Added
+
+- New SSL/TLS configuration options:
+  - `PG_REQUIRE_SSL` (default: false) - Enable SSL using system certificates without requiring custom CA
+  - `PG_SSL_REJECT_UNAUTHORIZED` (default: true) - Control certificate validation for SSL connections
+  - `PG_FETCH_TYPES` (default: true) - Control PostgreSQL type fetching behavior
+
+### Changed
+
+- Enhanced SSL/TLS configuration: Added support for SSL with system certificates in addition to custom CA certificates
+
+## [0.2.0] - 2025-08-23
+
+### Added
+
 - SSL/TLS support with custom CA certificate via `PG_SSL_ROOT_CERT` environment variable
 
 ## [0.1.0] - 2025-08-22
 
 ### Added
+
 - PostgreSQL MCP Server implementation with Model Context Protocol support
 - Dual transports: stdio (default) and Streamable HTTP at `/mcp` (configurable `PORT`, default `3000`)
 - SQL `query` tool returning JSON-encoded rows with security validation
