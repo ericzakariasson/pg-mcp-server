@@ -42,6 +42,9 @@ const EnvSchema = z.object({
   PG_PREPARE_STATEMENTS: booleanFromEnv(true),
   DEBUG: booleanFromEnv(false),
   PG_SSL_ROOT_CERT: z.string().optional(),
+  PG_REQUIRE_SSL: booleanFromEnv(false),
+  PG_SSL_REJECT_UNAUTHORIZED: booleanFromEnv(true),
+  PG_FETCH_TYPES: booleanFromEnv(true),
 });
 
 // Zod schema for the final config
@@ -54,6 +57,9 @@ const ConfigSchema = z.object({
   prepareStatements: z.boolean(),
   debug: z.boolean(),
   sslRootCertPath: z.string().optional(),
+  requireSsl: z.boolean().optional(),
+  sslRejectUnauthorized: z.boolean().optional(),
+  fetchTypes: z.boolean().optional(),
 });
 
 /**
@@ -63,7 +69,7 @@ export function loadConfig(): ServerConfig {
   try {
     // Parse environment variables using Zod
     const env = EnvSchema.parse(process.env);
-    
+
     // Create config object
     const config = {
       databaseUrl: env.DATABASE_URL,
@@ -74,6 +80,9 @@ export function loadConfig(): ServerConfig {
       prepareStatements: env.PG_PREPARE_STATEMENTS,
       debug: env.DEBUG,
       sslRootCertPath: env.PG_SSL_ROOT_CERT,
+      requireSsl: env.PG_REQUIRE_SSL ? true : undefined,
+      sslRejectUnauthorized: env.PG_SSL_REJECT_UNAUTHORIZED ? true : undefined,
+      fetchTypes: env.PG_FETCH_TYPES,
     };
 
     // Validate the final config
@@ -84,7 +93,9 @@ export function loadConfig(): ServerConfig {
       const errorMessage = error.errors
         .map((err) => `${err.path.join(".")}: ${err.message}`)
         .join(", ");
-      throw new ConfigurationError(`Configuration validation failed: ${errorMessage}`);
+      throw new ConfigurationError(
+        `Configuration validation failed: ${errorMessage}`
+      );
     }
     throw error;
   }
@@ -101,7 +112,9 @@ export function validateConfig(config: ServerConfig): void {
       const errorMessage = error.errors
         .map((err) => `${err.path.join(".")}: ${err.message}`)
         .join(", ");
-      throw new ConfigurationError(`Configuration validation failed: ${errorMessage}`);
+      throw new ConfigurationError(
+        `Configuration validation failed: ${errorMessage}`
+      );
     }
     throw error;
   }

@@ -56,6 +56,9 @@ export interface ServerConfig {
   prepareStatements: boolean;
   debug: boolean;
   sslRootCertPath?: string;
+  requireSsl?: boolean;
+  sslRejectUnauthorized?: boolean;
+  fetchTypes?: boolean;
 }
 
 // Error types
@@ -63,7 +66,7 @@ export class PostgresError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public detail?: string,
+    public detail?: string
   ) {
     super(message);
     this.name = "PostgresError";

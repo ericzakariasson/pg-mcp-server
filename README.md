@@ -60,7 +60,6 @@ pg-mcp-server --transport=http
 
 - **`postgres://tables`** - List all tables
 - **`postgres://table/{schema}/{table}`** - Get table schema and sample data
-  - Also supports listing: clients can list this template to discover a resource entry for each table (one resource per table).
 
 ### Example Prompts
 
