@@ -65,38 +65,70 @@ const ConfigSchema = z.object({
 
 /**
  * Extract schema parameter from DATABASE_URL
- * Supports currentSchema, schema, and search_path parameters
+ * Supports currentSchema, schema, and search_path parameters.
+ *
+ * Uses string-level manipulation on the query portion only so the
+ * authority (userinfo/host) is left byte-for-byte intact. Going through
+ * `new URL().toString()` would percent-encode special characters in the
+ * password (e.g. `@` → `%40`), which the `postgres` library has multiple
+ * known issues with and can cause authentication failures.
  */
 function extractSchemaFromUrl(url: string): {
   cleanUrl: string;
   currentSchema?: string;
 } {
-  try {
-    const urlObj = new URL(url);
-
-    // Check for schema parameters (in order of preference)
-    const currentSchema =
-      urlObj.searchParams.get("currentSchema") ||
-      urlObj.searchParams.get("schema") ||
-      urlObj.searchParams.get("search_path");
-
-    if (currentSchema) {
-      // Remove the schema parameter from the URL
-      urlObj.searchParams.delete("currentSchema");
-      urlObj.searchParams.delete("schema");
-      urlObj.searchParams.delete("search_path");
-
-      return {
-        cleanUrl: urlObj.toString(),
-        currentSchema,
-      };
-    }
-
-    return { cleanUrl: url };
-  } catch {
-    // If URL parsing fails, return the original URL
+  const queryStart = url.indexOf("?");
+  if (queryStart === -1) {
     return { cleanUrl: url };
   }
+
+  // Preserve fragment if present (unlikely for DATABASE_URL but cheap to handle)
+  const fragmentStart = url.indexOf("#", queryStart);
+  const queryEnd = fragmentStart === -1 ? url.length : fragmentStart;
+
+  const base = url.substring(0, queryStart);
+  const query = url.substring(queryStart + 1, queryEnd);
+  const fragment = fragmentStart === -1 ? "" : url.substring(fragmentStart);
+
+  const schemaKeys = new Set(["currentSchema", "schema", "search_path"]);
+  const params = query.length > 0 ? query.split("&") : [];
+
+  let currentSchema: string | undefined;
+  const remaining: string[] = [];
+
+  const safeDecode = (value: string): string => {
+    try {
+      return decodeURIComponent(value.replace(/\+/g, " "));
+    } catch {
+      return value;
+    }
+  };
+
+  for (const param of params) {
+    const eqIdx = param.indexOf("=");
+    const rawKey = eqIdx === -1 ? param : param.substring(0, eqIdx);
+    const rawValue = eqIdx === -1 ? "" : param.substring(eqIdx + 1);
+
+    if (schemaKeys.has(safeDecode(rawKey))) {
+      // Capture the first schema value we see; drop subsequent schema keys.
+      if (currentSchema === undefined) {
+        currentSchema = safeDecode(rawValue);
+      }
+      continue;
+    }
+
+    remaining.push(param);
+  }
+
+  if (currentSchema === undefined) {
+    return { cleanUrl: url };
+  }
+
+  const newQuery = remaining.length > 0 ? "?" + remaining.join("&") : "";
+  return {
+    cleanUrl: base + newQuery + fragment,
+    currentSchema,
+  };
 }
 
 /**
