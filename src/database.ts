@@ -102,6 +102,7 @@ export class DatabaseConnection {
   private createConnection(): Sql {
     const {
       databaseUrl,
+      currentSchema,
       maxConnections,
       connectionTimeout,
       prepareStatements,
@@ -109,7 +110,12 @@ export class DatabaseConnection {
       fetchTypes,
     } = this.config;
 
+    // currentSchema is validated in config.ts via the ConfigSchema regex and
+    // surfaced as a ConfigurationError, so it is known-safe by the time it
+    // reaches this constructor.
+
     // Build base connection options
+
     const connectionOptions: postgres.Options<
       Record<string, postgres.PostgresType>
     > = {
@@ -125,6 +131,16 @@ export class DatabaseConnection {
       },
       fetch_types: fetchTypes ?? true,
     };
+
+    // Pass search_path via startup connection parameters so every pooled
+    // connection inherits it, not just the first one we execute against.
+    if (currentSchema) {
+      connectionOptions.connection = {
+        ...connectionOptions.connection,
+        search_path: `${currentSchema},public`,
+      };
+      this.logger.info("Default schema configured", { schema: currentSchema });
+    }
 
     // Configure SSL/TLS based on configuration
     this.configureSsl(connectionOptions);

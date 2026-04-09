@@ -50,6 +50,13 @@ const EnvSchema = z.object({
 // Zod schema for the final config
 const ConfigSchema = z.object({
   databaseUrl: z.string(),
+  currentSchema: z
+    .string()
+    .regex(
+      /^[a-zA-Z_][a-zA-Z0-9_$]*$/,
+      "currentSchema must contain only alphanumeric characters, underscores, and dollar signs, starting with a letter or underscore"
+    )
+    .optional(),
   allowWriteOps: z.boolean(),
   maxConnections: z.number().min(1).max(100),
   connectionTimeout: z.number().min(1).max(300),
@@ -63,6 +70,74 @@ const ConfigSchema = z.object({
 });
 
 /**
+ * Extract schema parameter from DATABASE_URL
+ * Supports currentSchema, schema, and search_path parameters.
+ *
+ * Uses string-level manipulation on the query portion only so the
+ * authority (userinfo/host) is left byte-for-byte intact. Going through
+ * `new URL().toString()` would percent-encode special characters in the
+ * password (e.g. `@` → `%40`), which the `postgres` library has multiple
+ * known issues with and can cause authentication failures.
+ */
+function extractSchemaFromUrl(url: string): {
+  cleanUrl: string;
+  currentSchema?: string;
+} {
+  const queryStart = url.indexOf("?");
+  if (queryStart === -1) {
+    return { cleanUrl: url };
+  }
+
+  // Preserve fragment if present (unlikely for DATABASE_URL but cheap to handle)
+  const fragmentStart = url.indexOf("#", queryStart);
+  const queryEnd = fragmentStart === -1 ? url.length : fragmentStart;
+
+  const base = url.substring(0, queryStart);
+  const query = url.substring(queryStart + 1, queryEnd);
+  const fragment = fragmentStart === -1 ? "" : url.substring(fragmentStart);
+
+  const schemaKeys = new Set(["currentSchema", "schema", "search_path"]);
+  const params = query.length > 0 ? query.split("&") : [];
+
+  let currentSchema: string | undefined;
+  const remaining: string[] = [];
+
+  const safeDecode = (value: string): string => {
+    try {
+      return decodeURIComponent(value.replace(/\+/g, " "));
+    } catch {
+      return value;
+    }
+  };
+
+  for (const param of params) {
+    const eqIdx = param.indexOf("=");
+    const rawKey = eqIdx === -1 ? param : param.substring(0, eqIdx);
+    const rawValue = eqIdx === -1 ? "" : param.substring(eqIdx + 1);
+
+    if (schemaKeys.has(safeDecode(rawKey))) {
+      // Capture the first schema value we see; drop subsequent schema keys.
+      if (currentSchema === undefined) {
+        currentSchema = safeDecode(rawValue);
+      }
+      continue;
+    }
+
+    remaining.push(param);
+  }
+
+  if (currentSchema === undefined) {
+    return { cleanUrl: url };
+  }
+
+  const newQuery = remaining.length > 0 ? "?" + remaining.join("&") : "";
+  return {
+    cleanUrl: base + newQuery + fragment,
+    currentSchema,
+  };
+}
+
+/**
  * Parse and validate server configuration from environment variables
  */
 export function loadConfig(): ServerConfig {
@@ -70,9 +145,13 @@ export function loadConfig(): ServerConfig {
     // Parse environment variables using Zod
     const env = EnvSchema.parse(process.env);
 
+    // Extract schema parameter from DATABASE_URL
+    const { cleanUrl, currentSchema } = extractSchemaFromUrl(env.DATABASE_URL);
+
     // Create config object
     const config = {
-      databaseUrl: env.DATABASE_URL,
+      databaseUrl: cleanUrl,
+      currentSchema,
       allowWriteOps: env.DANGEROUSLY_ALLOW_WRITE_OPS,
       maxConnections: env.PG_MAX_CONNECTIONS,
       connectionTimeout: env.PG_CONNECTION_TIMEOUT,
