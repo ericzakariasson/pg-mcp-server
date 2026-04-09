@@ -50,6 +50,7 @@ const EnvSchema = z.object({
 // Zod schema for the final config
 const ConfigSchema = z.object({
   databaseUrl: z.string(),
+  currentSchema: z.string().optional(),
   allowWriteOps: z.boolean(),
   maxConnections: z.number().min(1).max(100),
   connectionTimeout: z.number().min(1).max(300),
@@ -63,6 +64,42 @@ const ConfigSchema = z.object({
 });
 
 /**
+ * Extract schema parameter from DATABASE_URL
+ * Supports currentSchema, schema, and search_path parameters
+ */
+function extractSchemaFromUrl(url: string): {
+  cleanUrl: string;
+  currentSchema?: string;
+} {
+  try {
+    const urlObj = new URL(url);
+
+    // Check for schema parameters (in order of preference)
+    const currentSchema =
+      urlObj.searchParams.get("currentSchema") ||
+      urlObj.searchParams.get("schema") ||
+      urlObj.searchParams.get("search_path");
+
+    if (currentSchema) {
+      // Remove the schema parameter from the URL
+      urlObj.searchParams.delete("currentSchema");
+      urlObj.searchParams.delete("schema");
+      urlObj.searchParams.delete("search_path");
+
+      return {
+        cleanUrl: urlObj.toString(),
+        currentSchema,
+      };
+    }
+
+    return { cleanUrl: url };
+  } catch {
+    // If URL parsing fails, return the original URL
+    return { cleanUrl: url };
+  }
+}
+
+/**
  * Parse and validate server configuration from environment variables
  */
 export function loadConfig(): ServerConfig {
@@ -70,9 +107,13 @@ export function loadConfig(): ServerConfig {
     // Parse environment variables using Zod
     const env = EnvSchema.parse(process.env);
 
+    // Extract schema parameter from DATABASE_URL
+    const { cleanUrl, currentSchema } = extractSchemaFromUrl(env.DATABASE_URL);
+
     // Create config object
     const config = {
-      databaseUrl: env.DATABASE_URL,
+      databaseUrl: cleanUrl,
+      currentSchema,
       allowWriteOps: env.DANGEROUSLY_ALLOW_WRITE_OPS,
       maxConnections: env.PG_MAX_CONNECTIONS,
       connectionTimeout: env.PG_CONNECTION_TIMEOUT,

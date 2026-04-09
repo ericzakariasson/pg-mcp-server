@@ -213,6 +213,41 @@ export class DatabaseConnection {
   }
 
   /**
+   * Set the default schema (search_path) if configured
+   */
+  private async setDefaultSchema(): Promise<void> {
+    if (this.config.currentSchema) {
+      try {
+        // Validate schema name doesn't contain dangerous characters
+        if (
+          this.config.currentSchema.includes("\0") ||
+          this.config.currentSchema.includes(";")
+        ) {
+          throw new PostgresError(
+            "Schema name contains invalid characters"
+          );
+        }
+
+        // Set search_path to the configured schema
+        await this.sql.unsafe(
+          `SET search_path TO ${this.quoteIdentifier(this.config.currentSchema)}, public`
+        );
+        this.logger.info("Default schema set", {
+          schema: this.config.currentSchema,
+        });
+      } catch (error) {
+        this.logger.error("Failed to set default schema", error);
+        const { message, code, detail } = extractErrorDetails(error);
+        throw new PostgresError(
+          `Failed to set default schema: ${message}`,
+          code,
+          detail
+        );
+      }
+    }
+  }
+
+  /**
    * Test database connection by executing a simple query
    */
   async testConnection(): Promise<void> {
@@ -220,6 +255,9 @@ export class DatabaseConnection {
       await this.sql`SELECT 1 as test`;
       this.isConnected = true;
       this.logger.info("Database connection established successfully");
+
+      // Set default schema if configured
+      await this.setDefaultSchema();
     } catch (error) {
       this.isConnected = false;
       const { message, code, detail } = extractErrorDetails(error);

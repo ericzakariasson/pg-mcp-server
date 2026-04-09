@@ -49,6 +49,7 @@ export interface McpResourceResponse {
 // Configuration types
 export interface ServerConfig {
   databaseUrl: string;
+  currentSchema?: string;
   allowWriteOps: boolean;
   maxConnections: number;
   connectionTimeout: number;
