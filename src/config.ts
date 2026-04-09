@@ -50,7 +50,13 @@ const EnvSchema = z.object({
 // Zod schema for the final config
 const ConfigSchema = z.object({
   databaseUrl: z.string(),
-  currentSchema: z.string().optional(),
+  currentSchema: z
+    .string()
+    .regex(
+      /^[a-zA-Z_][a-zA-Z0-9_$]*$/,
+      "currentSchema must contain only alphanumeric characters, underscores, and dollar signs, starting with a letter or underscore"
+    )
+    .optional(),
   allowWriteOps: z.boolean(),
   maxConnections: z.number().min(1).max(100),
   connectionTimeout: z.number().min(1).max(300),

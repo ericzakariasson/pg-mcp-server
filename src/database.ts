@@ -110,15 +110,12 @@ export class DatabaseConnection {
       fetchTypes,
     } = this.config;
 
-    // Validate schema name before any connection setup to avoid double-wrapping
-    // errors in try/catch blocks further down the call stack.
-    if (currentSchema && !/^[a-zA-Z_][a-zA-Z0-9_$]*$/.test(currentSchema)) {
-      throw new PostgresError(
-        "Invalid schema name: must contain only alphanumeric characters, underscores, and dollar signs, starting with a letter or underscore"
-      );
-    }
+    // currentSchema is validated in config.ts via the ConfigSchema regex and
+    // surfaced as a ConfigurationError, so it is known-safe by the time it
+    // reaches this constructor.
 
     // Build base connection options
+
     const connectionOptions: postgres.Options<
       Record<string, postgres.PostgresType>
     > = {
