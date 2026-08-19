@@ -1,4 +1,7 @@
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import {
+  McpServer,
+  ResourceTemplate,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
 import { loadConfig, validateConfig } from "./config.js";
 import { DatabaseConnection } from "./database.js";
 import { ConsoleLogger } from "./logger.js";
@@ -23,14 +26,16 @@ export interface PostgresMcp {
  */
 export type TransportKind = "stdio" | "http";
 
-export function createPostgresMcpServer(transportKind: TransportKind = "stdio"): PostgresMcp {
+export function createPostgresMcpServer(
+  transportKind: TransportKind = "stdio"
+): PostgresMcp {
   const config = loadConfig();
   validateConfig(config);
 
   const logger = new ConsoleLogger(
     config.debug,
     // For stdio transport, suppress non-error logs to avoid corrupting the stream
-    transportKind === "stdio" ? 0 /* LogLevel.ERROR */ : undefined,
+    transportKind === "stdio" ? 0 /* LogLevel.ERROR */ : undefined
   );
   const db = new DatabaseConnection(config, logger);
   const queryValidator = new QueryValidator(config.allowWriteOps, logger);
@@ -79,88 +84,98 @@ export function createPostgresMcpServer(transportKind: TransportKind = "stdio"):
     }
   );
 
-  // Register tables resource
-  server.registerResource(
-    "tables",
-    "postgres://tables",
-    {
-      title: "PostgreSQL Tables",
-      description:
-        "List all tables available in the connected PostgreSQL database.",
-      mimeType: "application/json",
-    },
-    async (uri) => {
-      try {
-        const tables = await db.getTables();
-        return {
-          contents: [
-            { uri: uri.href, text: JSON.stringify(tables, null, 2) },
-          ],
-        };
-      } catch (error) {
-        logger.error("Tables resource error", error);
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to retrieve tables";
-        return {
-          contents: [
-            { uri: uri.href, text: JSON.stringify({ error: errorMessage }, null, 2) },
-          ],
-        };
-      }
-    }
-  );
-
-  // Register table detail resource
-  server.registerResource(
-    "table",
-    new ResourceTemplate("postgres://table/{schema}/{table}", {
-      // Expose each table as a discoverable MCP resource
-      async list() {
-        const tables = await db.getTables();
-        return {
-          resources: tables.map((t) => ({
-            uri: `postgres://table/${encodeURIComponent(t.table_schema)}/${encodeURIComponent(t.table_name)}`,
-            name: `${t.table_schema}.${t.table_name}`,
-            description: `Schema and sample rows for ${t.table_schema}.${t.table_name}`,
-            mimeType: "application/json",
-          })),
-        };
+  // Register resources only if enabled
+  if (config.enableResources !== false) {
+    // Register tables resource
+    server.registerResource(
+      "tables",
+      "postgres://tables",
+      {
+        title: "PostgreSQL Tables",
+        description:
+          "List all tables available in the connected PostgreSQL database.",
+        mimeType: "application/json",
       },
-    }),
-    {
-      title: "PostgreSQL Table Details",
-      description: "Get schema information and sample rows for a specific table",
-      mimeType: "application/json",
-    },
-    async (uri, rawArgs) => {
-      try {
-        const schema = String(rawArgs?.schema ?? "");
-        const table = String(rawArgs?.table ?? "");
-        if (!schema || !table) {
-          throw new Error("Schema and table parameters are required");
+      async (uri) => {
+        try {
+          const tables = await db.getTables();
+          return {
+            contents: [
+              { uri: uri.href, text: JSON.stringify(tables, null, 2) },
+            ],
+          };
+        } catch (error) {
+          logger.error("Tables resource error", error);
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to retrieve tables";
+          return {
+            contents: [
+              {
+                uri: uri.href,
+                text: JSON.stringify({ error: errorMessage }, null, 2),
+              },
+            ],
+          };
         }
-        const tableDetails = await db.getTableDetails(schema, table);
-        return {
-          contents: [
-            { uri: uri.href, text: JSON.stringify(tableDetails, null, 2) },
-          ],
-        };
-      } catch (error) {
-        logger.error("Table detail resource error", error);
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to retrieve table details";
-        return {
-          contents: [
-            { uri: uri.href, text: JSON.stringify({ error: errorMessage }, null, 2) },
-          ],
-        };
       }
-    }
-  );
+    );
+
+    // Register table detail resource
+    server.registerResource(
+      "table",
+      new ResourceTemplate("postgres://table/{schema}/{table}", {
+        // Expose each table as a discoverable MCP resource
+        async list() {
+          const tables = await db.getTables();
+          return {
+            resources: tables.map((t) => ({
+              uri: `postgres://table/${encodeURIComponent(t.table_schema)}/${encodeURIComponent(t.table_name)}`,
+              name: `${t.table_schema}.${t.table_name}`,
+              description: `Schema and sample rows for ${t.table_schema}.${t.table_name}`,
+              mimeType: "application/json",
+            })),
+          };
+        },
+      }),
+      {
+        title: "PostgreSQL Table Details",
+        description:
+          "Get schema information and sample rows for a specific table",
+        mimeType: "application/json",
+      },
+      async (uri, rawArgs) => {
+        try {
+          const schema = String(rawArgs?.schema ?? "");
+          const table = String(rawArgs?.table ?? "");
+          if (!schema || !table) {
+            throw new Error("Schema and table parameters are required");
+          }
+          const tableDetails = await db.getTableDetails(schema, table);
+          return {
+            contents: [
+              { uri: uri.href, text: JSON.stringify(tableDetails, null, 2) },
+            ],
+          };
+        } catch (error) {
+          logger.error("Table detail resource error", error);
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to retrieve table details";
+          return {
+            contents: [
+              {
+                uri: uri.href,
+                text: JSON.stringify({ error: errorMessage }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+    );
+  }
 
   return { server, ctx: { logger, db, queryValidator } };
 }
-
-
-
-

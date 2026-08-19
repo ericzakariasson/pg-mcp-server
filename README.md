@@ -30,6 +30,7 @@ Add to your MCP client settings:
 - `DANGEROUSLY_ALLOW_WRITE_OPS` - Enable writes (default: `false`)
 - `DEBUG` - Enable debug logging (default: `false`)
 - `PG_SSL_ROOT_CERT` - Optional path to a TLS CA bundle (e.g., AWS RDS global bundle)
+- `ENABLE_RESOURCES` - Enable MCP resources (default: `true`, set to `false` to disable)
 
 ## Usage
 
@@ -117,7 +118,11 @@ bun run build:js
   "mcpServers": {
     "postgres": {
       "command": "node",
-      "args": ["/absolute/path/to/pg-mcp-server/lib/index.js", "--transport", "stdio"],
+      "args": [
+        "/absolute/path/to/pg-mcp-server/lib/index.js",
+        "--transport",
+        "stdio"
+      ],
       "env": {
         "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/postgres"
       }
@@ -132,7 +137,7 @@ This repo auto-creates a GitHub Release when you push a tag that matches the ver
 
 1. Update `CHANGELOG.md` and bump the version in `package.json`.
 2. Commit the changes on `main` (or your release branch).
-3. Create and push a matching tag: 
+3. Create and push a matching tag:
 
 ```bash
 VERSION=$(jq -r .version package.json)

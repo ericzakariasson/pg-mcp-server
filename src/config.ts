@@ -45,6 +45,7 @@ const EnvSchema = z.object({
   PG_REQUIRE_SSL: booleanFromEnv(false),
   PG_SSL_REJECT_UNAUTHORIZED: booleanFromEnv(true),
   PG_FETCH_TYPES: booleanFromEnv(true),
+  ENABLE_RESOURCES: booleanFromEnv(true),
 });
 
 // Zod schema for the final config
@@ -60,6 +61,7 @@ const ConfigSchema = z.object({
   requireSsl: z.boolean().optional(),
   sslRejectUnauthorized: z.boolean().optional(),
   fetchTypes: z.boolean().optional(),
+  enableResources: z.boolean().optional(),
 });
 
 /**
@@ -83,6 +85,7 @@ export function loadConfig(): ServerConfig {
       requireSsl: env.PG_REQUIRE_SSL ? true : undefined,
       sslRejectUnauthorized: env.PG_SSL_REJECT_UNAUTHORIZED ? true : undefined,
       fetchTypes: env.PG_FETCH_TYPES,
+      enableResources: env.ENABLE_RESOURCES,
     };
 
     // Validate the final config

@@ -59,6 +59,7 @@ export interface ServerConfig {
   requireSsl?: boolean;
   sslRejectUnauthorized?: boolean;
   fetchTypes?: boolean;
+  enableResources?: boolean;
 }
 
 // Error types
